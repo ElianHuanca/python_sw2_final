@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Panel administrativo de ecommerce con visualización de KPIs y análisis con IA." />
+  <meta name="author" content="Luishiño Pericena Choque" />
+  <title>Dashboard Ecommerce</title>
+
+  <!-- TailwindCSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-800 p-6 font-sans">
+
+  <!-- Título principal -->
+  <header class="mb-8">
+    <h1 class="text-4xl font-bold text-blue-800">📊 Dashboard Ecommerce</h1>
+    <p class="text-sm text-gray-600">Monitorea el rendimiento de tu tienda en tiempo real</p>
+  </header>
+
+  <!-- KPIs -->
+  <section aria-label="Indicadores clave de rendimiento" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="bg-white rounded-lg shadow-md p-5 text-center">
+      <h2 class="text-lg font-semibold">🛒 Pedidos</h2>
+      <p id="kpiPedidos" class="text-3xl font-bold text-blue-600 animate-pulse">...</p>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-5 text-center">
+      <h2 class="text-lg font-semibold">📦 Productos</h2>
+      <p id="kpiProductos" class="text-3xl font-bold text-green-600 animate-pulse">...</p>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-5 text-center">
+      <h2 class="text-lg font-semibold">💵 Ventas Totales</h2>
+      <p id="kpiVentas" class="text-3xl font-bold text-yellow-600 animate-pulse">... Bs</p>
+    </div>
+  </section>
+
+  <!-- Gráficos -->
+  <section aria-label="Visualización de datos" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white rounded-lg shadow-md p-5">
+      <h3 class="text-lg font-semibold text-blue-700 mb-3">📈 Ventas por mes</h3>
+      <canvas id="ventasChart" aria-label="Gráfico de ventas mensuales" role="img"></canvas>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-5">
+      <h3 class="text-lg font-semibold text-blue-700 mb-3">👥 Clientes por grupo</h3>
+      <canvas id="clusterChart" aria-label="Gráfico de clustering de clientes" role="img"></canvas>
+    </div>
+  </section>
+
+  <!-- Insights IA -->
+  <section id="aiInsights" class="mt-10 bg-white p-5 rounded-lg shadow-md">
+    <h4 class="font-semibold text-lg mb-2">🧠 Análisis con IA (Gemini)</h4>
+    <p id="insightText" class="text-gray-700 text-sm italic">Cargando análisis...</p>
+  </section>
+
+  <!-- Scripts -->
+  <script>
+    // Función principal de carga de dashboard
+    async function cargarDashboard() {
+      try {
+        const res = await fetch('/api/dashboard/data');
+        const data = await res.json();
+
+        // KPIs
+        document.getElementById('kpiPedidos').textContent = data.total_pedidos ?? 0;
+        document.getElementById('kpiProductos').textContent = data.total_productos ?? 0;
+        document.getElementById('kpiVentas').textContent = `${data.total_ventas ?? 0} Bs`;
+
+        // Gráfico: Ventas por mes
+        new Chart(document.getElementById('ventasChart'), {
+          type: 'line',
+          data: {
+            labels: data.ventas_mes.map(x => x.mes),
+            datasets: [{
+              label: 'Ventas mensuales (Bs)',
+              data: data.ventas_mes.map(x => x.total),
+              backgroundColor: 'rgba(59, 130, 246, 0.2)',
+              borderColor: 'rgba(59, 130, 246, 1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { position: 'top' } }
+          }
+        });
+
+        // Gráfico: Clustering de clientes
+        new Chart(document.getElementById('clusterChart'), {
+          type: 'bar',
+          data: {
+            labels: data.clientes_clusters.map(x => 'Grupo ' + x.cluster),
+            datasets: [{
+              label: 'Clientes',
+              data: data.clientes_clusters.map(x => x.cliente_id),
+              backgroundColor: ['#38bdf8', '#fb923c', '#34d399']
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
+          }
+        });
+
+        // Llamada al análisis con IA (Gemini u otro modelo LLM)
+        const insightRes = await fetch('/api/insights', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: `Total ventas: ${data.total_ventas}, Pedidos: ${data.total_pedidos}, Productos: ${data.total_productos}`
+          })
+        });
+        const insightData = await insightRes.json();
+        document.getElementById('insightText').textContent = insightData.insights || "Sin análisis generado.";
+
+      } catch (error) {
+        console.error('Error al cargar el dashboard:', error);
+        document.getElementById('insightText').textContent = "Error al generar el análisis con IA.";
+      }
+    }
+
+    cargarDashboard();
+  </script>
+
+</body>
+
+</html>

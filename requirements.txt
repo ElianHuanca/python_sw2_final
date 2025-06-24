@@ -1,0 +1,11 @@
+pandas
+matplotlib
+requests
+dash
+scikit-learn
+flask-cors
+mysql-connector-python
+dotenv
+google-generativeai
+statsmodels
+tensorflow
