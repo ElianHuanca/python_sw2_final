@@ -5,7 +5,8 @@ dash
 scikit-learn
 flask-cors
 mysql-connector-python
-dotenv
+python-dotenv
 google-generativeai
 statsmodels
 tensorflow
+gunicorn
