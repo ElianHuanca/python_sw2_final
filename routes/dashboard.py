@@ -14,6 +14,7 @@ from tensorflow.keras.layers import Dense, LSTM
 from tensorflow.keras.optimizers import Adam
 import warnings
 from datetime import datetime, timedelta
+import math
 
 # Suppress warnings for cleaner output
 warnings.filterwarnings("ignore")
@@ -345,6 +346,9 @@ def calcular_estadisticas_ventas(df):
     moda = df['total'].mode().iloc[0] if not df['total'].mode().empty else 0
     std_dev = round(df['total'].std(), 2)
     
+    if math.isnan(std_dev):
+        std_dev = 0  # o None, si prefieres
+
     # IQR
     q75, q25 = np.percentile(df['total'], [75, 25])
     iqr = round(q75 - q25, 2)
