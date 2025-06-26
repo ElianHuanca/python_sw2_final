@@ -8,5 +8,5 @@ mysql-connector-python
 python-dotenv
 google-generativeai
 statsmodels
-tensorflow==2.13.0
+tensorflow
 gunicorn
